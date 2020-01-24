@@ -2,6 +2,7 @@ from xml.etree import ElementTree
 import os
 import csv
 
+
 '''
 Parte 1 del proyecto de Datathon.
 - Parser del xml dado de los autores hacia un archivo csv.
@@ -27,12 +28,32 @@ csvwriter.writerow(col_names)
 root = tree.getroot()
 
 #Iteramos sobre los datos del xml.
+#Artículos
 for article in root.findall('article'):
-	for autor in article.iter('author'):
-		event_data = []
-		event_data.append(article.get('key'))
-		event_data.append(autor.text)
-		#Escribimos en el parser.
-		csvwriter.writerow(event_data)
+	articleyear = int(article.find('year').text)
+	if articleyear >= 1990 and articleyear <= 2000:
+		print(articleyear) 
+		for autor in article.iter('author'):
+			event_data = []
+			event_data.append(article.get('key'))
+			event_data.append(autor.text)
+
+			csvwriter.writerow(event_data)
+	else:
+		continue
+
+#Inproceedings
+for article in root.findall('inproceedings'):
+	articleyear = int(article.find('year').text)
+	if articleyear >= 1990 and articleyear <= 2000:
+		print(articleyear) 
+		for autor in article.iter('author'):
+			event_data = []
+			event_data.append(article.get('key'))
+			event_data.append(autor.text)
+
+			csvwriter.writerow(event_data)
+	else:
+		continue
 
 csv_authorships.close()
