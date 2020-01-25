@@ -21,8 +21,15 @@ def connected_component_subgraphs(G):
     return subgraphs_connected
 
 #TEST.
-#Obtenemos las subgráficas.
-subg = connected_component_subgraphs(G)
-#Dibujamos una subgráfica aleatoria.
-nx.draw(subg[1],with_labels=True)
+#Subgráfica monstruo
+testGraph = subg[0]
+
+#Camino más corto entre dos nodos.
+shortest_path = nx.shortest_path(testGraph, source='Hassan Bezzazi', target='Randall L. Geiger') 
+
+#Aquí crearíamos la subgráfica más completa entre dos nodos.
+subgraf = testGraph.subgraph(shortest_path)
+
+#Mostramos en pantalla.
+nx.draw(subgraf, with_labels=True)
 plt.show()
