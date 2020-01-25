@@ -30,6 +30,9 @@ aristas = {frozenset(autor) for autor in aristas}
 #Convertimos a lista de tuplas.
 aristas = [tuple(i) for i in aristas]
 
+#Filtramos tuplas con longitud menor a 2.
+aristas = [i for i in aristas if len(i) == 2]
+
 #Convertimos a dataframe
 aristas = pd.DataFrame(aristas, columns=['source', 'target'])
 
