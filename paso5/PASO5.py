@@ -1,18 +1,16 @@
-import numpy as np
 import pandas as pd
-import io
 import networkx as nx
+import operator
 import matplotlib.pyplot as plt
 
-#Leémos la gráficas del catálogo de aristas.
-df=pd.read_csv('edges.csv')
-tuples = [tuple(x) for x in df.to_numpy()]
-#Creamos la gráfica.
-G = nx.Graph()
-G.add_edges_from(tuples)
+'''
+Paso 5: En este archivo se harán diversos modelos de predicción
+de aristas usando el catálogo de aristas que obtuvimos en el paso
+4.
+'''
 
-#Función auxiliar que nos ayuda a obtener las subgráficas conexas de la gráfica.
-#Regresa una lista de gráficas conexas.
+#Función auxiliar que nos ayuda a obtener las subgráficas
+#conexas del catálogo de aristas.
 def connected_component_subgraphs(G):
     subgraphs_connected = []
     for c in nx.connected_components(G):
@@ -20,16 +18,53 @@ def connected_component_subgraphs(G):
 
     return subgraphs_connected
 
-#TEST.
-#Subgráfica monstruo
-testGraph = subg[0]
+#Función auxiliar que nos ayuda a encontrar una subgráfica entre dos
+#nodos usando los caminos más cortos entre ellos.
+def encuentraSubGrafica(autor1, autor2, G):
+    #Caminos más cortos entre dos autores.
+    shortest_path = nx.all_shortest_paths(G, source=autor1, target=autor2)
+    #En donde guardamos los vértices.
+    nodos_path = set()
 
-#Camino más corto entre dos nodos.
-shortest_path = nx.shortest_path(testGraph, source='Hassan Bezzazi', target='Randall L. Geiger') 
+    #Los agregamos usando el camino más corto
+    for path in shortest_path:
+        for author in path:
+            nodos_path.add(author)
 
-#Aquí crearíamos la subgráfica más completa entre dos nodos.
-subgraf = testGraph.subgraph(shortest_path)
+    #Obtenemos la subgráfica inducida        
+    induced_subg = nx.induced_subgraph(G, list(nodos_path))
 
-#Mostramos en pantalla.
-nx.draw(subgraf, with_labels=True)
-plt.show()
+    return induced_subg
+
+'''
+Modelo de predicción 1:
+Usando la subgráfica inducida por caminos más cortos entre dos vértices
+aplicaremos el algorítmo de predicción Adamic-Adar y regresaremos el
+puntaje obtenido de ambos autores en una gráfica o subgráfica.
+'''
+def adamic_Adar(autor1, autor2, G):
+    #Obtenemos la subgráfica inducida.
+    induced_subgraph = encuentraSubGrafica(autor1, autor2, G)
+
+    #Realizamos los puntajes
+    puntajes = list(nx.adamic_adar_index(induced_subgraph))
+
+    for puntaje in puntajes:
+        if puntaje[0] == autor1 and puntaje[1] == autor2:
+            return puntaje[2]
+
+    #Si no lo encontramos quiere decir que ya está la arista.
+    return 0
+
+#main.
+#Leémos el catálogo de aristas y lo convertimos a una gráfica de networkx.
+catalogo_aristas = pd.read_csv('edges.csv')
+aristas = [tuple(x) for x in catalogo_aristas.to_numpy()]
+graficaAutores = nx.Graph()
+graficaAutores.add_edges_from(aristas)
+
+#Obtenemos las subgráficas.
+connected_components = connected_component_subgraphs(graficaAutores)
+
+#Aplicación del primer modelo de predicción.connected_components
+print(adamic_Adar('Ronald M. Lee', 'Richard C. T. Lee', connected_components[0]))
