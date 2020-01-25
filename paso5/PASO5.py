@@ -50,7 +50,11 @@ Usando la subgráfica inducida por caminos más cortos entre dos vértices
 aplicaremos el algorítmo de predicción Adamic-Adar y regresaremos el
 puntaje obtenido de ambos autores en una gráfica o subgráfica.
 '''
-def adamic_Adar(autor1, autor2, listaGraficas):
+def adamic_Adar(autor1, autor2, listaGraficas, graficaAutores):
+    #Primero verificamos si podemos llegar desde el autor 1 al autor 2.
+    if not nx.has_path(graficaAutores, autor1, autor2):
+        return False
+
     #buscamos la subgráfica en la lista de gráficas
     G = buscaGrafica(listaGraficas, autor1)
 
@@ -60,12 +64,29 @@ def adamic_Adar(autor1, autor2, listaGraficas):
     #Realizamos los puntajes
     puntajes = list(nx.adamic_adar_index(induced_subgraph))
 
-    for puntaje in puntajes:
-        if puntaje[0] == autor1 and puntaje[1] == autor2:
-            return puntaje[2]
+    #Si la lista de puntajes es vacía quiere decir que ya existe una arista.
+    if not puntajes:
+        return True
 
-    #Si no lo encontramos quiere decir que ya está la arista.
-    return 0
+    #Ordenamos los puntajes de mayor a menor.
+    puntajes.sort(key=operator.itemgetter(2), reverse = True)
+
+    #Obtenemos el puntaje más alto.
+    puntaje_maximo = puntajes[0][2]
+
+    #Buscamos el puntaje de la arista que queremos predecir.
+    for puntaje in puntajes:
+        if puntaje[0] in [autor1, autor2] and puntaje[1] in [autor1, autor2]:
+            puntaje_prediccion = puntaje[2]
+    print(puntajes)
+    print(puntaje_prediccion)
+
+    #Vemos si existe probabilidad de que exisa la arista con base al puntaje máximo.
+    #Por defecto tomamos un 60% de rango del puntaje máximo.
+    if puntaje_prediccion >= puntaje_maximo * 0.40:
+        return True
+    else:
+        return False
 
 #Leémos el catálogo de aristas y lo convertimos a una gráfica de networkx.
 catalogo_aristas = pd.read_csv('edges.csv')
@@ -77,7 +98,4 @@ graficaAutores.add_edges_from(aristas)
 connected_components = connected_component_subgraphs(graficaAutores)
 
 #Aplicación del primer modelo de predicción.
-print(adamic_Adar('Ronald M. Lee', 'Richard C. T. Lee', connected_components))
-
-#nx.draw(connected_components[0], with_labels=True)
-#plt.show()
+print(adamic_Adar('Sanjay Jain 0001','A. David Marshall', connected_components, graficaAutores))
