@@ -78,8 +78,6 @@ def adamic_Adar(autor1, autor2, listaGraficas, graficaAutores):
     for puntaje in puntajes:
         if puntaje[0] in [autor1, autor2] and puntaje[1] in [autor1, autor2]:
             puntaje_prediccion = puntaje[2]
-    print(puntajes)
-    print(puntaje_prediccion)
 
     #Vemos si existe probabilidad de que exisa la arista con base al puntaje máximo.
     #Por defecto tomamos un 60% de rango del puntaje máximo.
@@ -87,6 +85,40 @@ def adamic_Adar(autor1, autor2, listaGraficas, graficaAutores):
         return True
     else:
         return False
+
+'''
+Función auxiliar que recibe un csv y evalua con el modelo
+elegido, se etiquetaran las aristas recibidas y generará un
+nuevo csv con los resultados 'P' si existe la arista 'N' si el modelo
+considera que no existe.
+'''
+def evalua_csv(listaGraficas, graficaAutores):
+    #Importamos las aristas de pruebas.
+    aristas = pd.read_csv('final_results.csv')
+
+    csv_evaluado = []
+
+    #Iteramos sobre las aristas.
+    for index, row in aristas.iterrows():
+        autor1 = row['source']
+        autor2 = row['target']
+
+        #Aplicamos el modelo.
+        prediccion = adamic_Adar(autor1, autor2, listaGraficas, graficaAutores)
+
+        #Agregamos la predicción con su arista.
+        if prediccion:
+            p = 'P'
+        else:
+            p = 'N'
+        csv_evaluado.append([autor1, autor2, p])
+
+    #Creamos el dataframe.
+    csv = pd.DataFrame(csv_evaluado, columns=['source', 'target', 'prediction'])
+
+    #Creamos el csv de aristas.
+    aristas.to_csv("final_results_07.csv", encoding='utf-8', index=False)
+
 
 #Leémos el catálogo de aristas y lo convertimos a una gráfica de networkx.
 catalogo_aristas = pd.read_csv('edges.csv')
@@ -97,5 +129,5 @@ graficaAutores.add_edges_from(aristas)
 #Obtenemos las subgráficas.
 connected_components = connected_component_subgraphs(graficaAutores)
 
-#Aplicación del primer modelo de predicción.
-print(adamic_Adar('Sanjay Jain 0001','A. David Marshall', connected_components, graficaAutores))
+#Para generar el final result.
+evalua_csv(connected_components, graficaAutores)
