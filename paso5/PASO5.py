@@ -36,13 +36,24 @@ def encuentraSubGrafica(autor1, autor2, G):
 
     return induced_subg
 
+#Función auxiliar que nos ayuda a buscar a un autor dentro de la lista
+#de gráficas.
+def buscaGrafica(listaGraf, autor):
+    for grafica in listaGraf:
+        if grafica.has_node(autor):
+            return grafica
+    return None
+
 '''
 Modelo de predicción 1:
 Usando la subgráfica inducida por caminos más cortos entre dos vértices
 aplicaremos el algorítmo de predicción Adamic-Adar y regresaremos el
 puntaje obtenido de ambos autores en una gráfica o subgráfica.
 '''
-def adamic_Adar(autor1, autor2, G):
+def adamic_Adar(autor1, autor2, listaGraficas):
+    #buscamos la subgráfica en la lista de gráficas
+    G = buscaGrafica(listaGraficas, autor1)
+
     #Obtenemos la subgráfica inducida.
     induced_subgraph = encuentraSubGrafica(autor1, autor2, G)
 
@@ -56,7 +67,6 @@ def adamic_Adar(autor1, autor2, G):
     #Si no lo encontramos quiere decir que ya está la arista.
     return 0
 
-#main.
 #Leémos el catálogo de aristas y lo convertimos a una gráfica de networkx.
 catalogo_aristas = pd.read_csv('edges.csv')
 aristas = [tuple(x) for x in catalogo_aristas.to_numpy()]
@@ -66,5 +76,8 @@ graficaAutores.add_edges_from(aristas)
 #Obtenemos las subgráficas.
 connected_components = connected_component_subgraphs(graficaAutores)
 
-#Aplicación del primer modelo de predicción.connected_components
-print(adamic_Adar('Ronald M. Lee', 'Richard C. T. Lee', connected_components[0]))
+#Aplicación del primer modelo de predicción.
+print(adamic_Adar('Ronald M. Lee', 'Richard C. T. Lee', connected_components))
+
+#nx.draw(connected_components[0], with_labels=True)
+#plt.show()
